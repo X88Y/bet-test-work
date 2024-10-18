@@ -1,0 +1,30 @@
+# docker-compose.yml
+
+version: '3.8'
+services:
+  line-provider:
+    build:
+      context: ./line_provider
+    container_name: line-provider
+    ports:
+      - "8000:8000"
+
+  db:
+    image: postgres:13
+    container_name: bet-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: betdb
+    ports:
+      - "5432:5432"
+
+  bet-maker:
+    build:
+      context: ./bet_maker
+    container_name: bet-maker
+    depends_on:
+      - db
+    ports:
+      - "8001:8001"
+    command: bash -c "python init_db.py && uvicorn main:app --host 0.0.0.0 --port 8001"
